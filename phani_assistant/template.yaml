@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Phani Assistant - Serverless Gradio App
+
+Parameters:
+  PerplexityApiKey:
+    Type: String
+    NoEcho: true
+    Description: Perplexity API Key
+  PushoverUser:
+    Type: String
+    NoEcho: true
+    Description: Pushover User ID
+  PushoverToken:
+    Type: String
+    NoEcho: true
+    Description: Pushover Token
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 1024
+
+Resources:
+  PhaniAssistantFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          PERPLEXITY_API_KEY: !Ref PerplexityApiKey
+          PUSHOVER_USER: !Ref PushoverUser
+          PUSHOVER_TOKEN: !Ref PushoverToken
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - "*"
+          AllowHeaders:
+            - "*"
+      Events:
+        HttpApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PhaniAssistantApi
+            Path: /{proxy+}
+            Method: ANY
+        HttpApiRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref PhaniAssistantApi
+            Path: /
+            Method: ANY
+    Metadata:
+      Dockerfile: Dockerfile
+      DockerContext: .
+      DockerTag: latest
+
+  PhaniAssistantApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - "*"
+        AllowHeaders:
+          - "*"
+
+Outputs:
+  FunctionUrl:
+    Description: Lambda Function URL
+    Value: !GetAtt PhaniAssistantFunctionUrl.FunctionUrl
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !Sub "https://${PhaniAssistantApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
