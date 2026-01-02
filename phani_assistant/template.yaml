@@ -19,7 +19,7 @@ Parameters:
 Globals:
   Function:
     Timeout: 300
-    MemorySize: 1024
+    MemorySize: 3008  # Increased for better CPU allocation and faster cold starts
 
 Resources:
   PhaniAssistantFunction:
