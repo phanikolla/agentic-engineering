@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mermaid Renderer</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: "Noto Sans CJK SC", "WenQuanYi Zen Hei", "SimSun", "Microsoft YaHei",
+                         "Arial Unicode MS", "Arial", sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            background: white;
+            color: #333;
+        }
+         
+        .mermaid {
+            text-align: center;
+            margin: 1.5em 0;
+            page-break-inside: avoid;
+            background-color: transparent;
+        }
+        .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="mermaid">graph TD
+    User[Supply Chain Manager] --&gt; Supervisor(Supply Chain Orchestrator)
+    Supervisor --&gt; Agent_1(Inventory Analyst Agent)
+    Supervisor --&gt; Agent_2(Procurement Agent)
+    Supervisor --&gt; Agent_3(Logistics Tracker Agent)
+
+    Agent_1 --&gt; External_System_1[ERP System]
+    Agent_2 --&gt; External_System_2[Supplier Portal]
+    Agent_3 --&gt; External_System_3[Shipping Carrier API]
+
+    User -- &#34;Monitor inventory levels&#34; --&gt; Supervisor
+    User -- &#34;Approve reorder&#34; --&gt; Supervisor
+
+    Supervisor -- &#34;Request inventory data&#34; --&gt; Agent_1
+    Agent_1 -- &#34;Inventory report (low stock detected)&#34; --&gt; Supervisor
+    External_System_1 -- &#34;Stock data&#34; --&gt; Agent_1
+
+    Supervisor -- &#34;Initiate reorder for X units of Y&#34; --&gt; Agent_2
+    Agent_2 -- &#34;Place order&#34; --&gt; External_System_2
+    External_System_2 -- &#34;Order confirmation&#34; --&gt; Agent_2
+    Agent_2 -- &#34;Order placed (PO# Z)&#34; --&gt; Supervisor
+
+    Supervisor -- &#34;Track shipment for PO# Z&#34; --&gt; Agent_3
+    Agent_3 -- &#34;Query shipment status&#34; --&gt; External_System_3
+    External_System_3 -- &#34;Shipment status (ETA)&#34; --&gt; Agent_3
+    Agent_3 -- &#34;Shipment update (ETA: DD/MM)&#34; --&gt; Supervisor
+
+    Supervisor -- &#34;Alert: Low stock for Item A&#34; --&gt; User
+    Supervisor -- &#34;Request reorder approval for Item A&#34; --&gt; User
+    Supervisor -- &#34;Shipment update for Item A (ETA: DD/MM)&#34; --&gt; User
+</div>
+    <script>
+        
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({
+                startOnLoad: false,  
+                theme: 'default',
+                securityLevel: 'loose'
+            });
+        }
+
+        
+        document.addEventListener("DOMContentLoaded", async function() {
+            if (typeof mermaid === 'undefined') {
+                return;
+            }
+
+            const mermaidElements = document.querySelectorAll('.mermaid');
+            let hasError = false;
+
+            for (let i = 0; i < mermaidElements.length; i++) {
+                const element = mermaidElements[i];
+                const mermaidCode = element.textContent.trim();
+
+                try {
+                    const { svg } = await mermaid.render('mermaid-diagram-' + i, mermaidCode);
+                    element.innerHTML = svg;
+                    console.log('Mermaid diagram ' + (i + 1) + ' rendered successfully');
+                } catch (error) {
+                    hasError = true;
+                    console.error('Mermaid rendering error for diagram ' + (i + 1) + ':', error);
+
+                    
+                    element.innerHTML = '<div class="mermaid-error" style="color: red; border: 2px solid red; padding: 10px; border-radius: 5px; background: #ffeeee;">' +
+                        '<strong>Mermaid Rendering Error (Diagram ' + (i + 1) + '):</strong><br>' +
+                        '<code>' + error.message + '</code>' +
+                        '</div>';
+
+                    
+                    document.body.classList.add('mermaid-render-failed');
+                }
+            }
+
+            
+            window.mermaidRenderComplete = true;
+            window.mermaidHasError = hasError;
+        });
+    </script>
+</body>
+</html>

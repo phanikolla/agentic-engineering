@@ -1,0 +1,58 @@
+{
+  "platform_version": "11.0",
+  "orchestration_pattern": "Supervisor",
+  "supervisor_agent": {
+    "name": "Supply Chain Orchestrator",
+    "description": "Coordinates inventory, procurement, and logistics agents.",
+    "llm_model": "gpt-4o",
+    "prompts": {
+      "system": "You are the Supply Chain Orchestrator. Your goal is to manage inventory levels, coordinate with procurement for reordering, and track shipments. Use the specialized agents to gather data and perform actions."
+    }
+  },
+  "sub_agents": [
+    {
+      "name": "Inventory Analyst Agent",
+      "description": "Analyzes stock levels and identifies items below threshold.",
+      "tools": ["get_stock_levels", "get_item_details"]
+    },
+    {
+      "name": "Procurement Agent",
+      "description": "Handles supplier quotes and order placement.",
+      "tools": ["get_quotes", "place_order"]
+    },
+    {
+      "name": "Logistics Tracker Agent",
+      "description": "Tracks shipments and provides ETA.",
+      "tools": ["track_shipment"]
+    }
+  ],
+  "tools": [
+    {
+      "name": "get_stock_levels",
+      "type": "REST",
+      "endpoint": "https://api.erp-system.com/v1/inventory",
+      "method": "GET"
+    },
+    {
+      "name": "get_quotes",
+      "type": "REST",
+      "endpoint": "https://api.supplier-portal.com/v1/quotes",
+      "method": "GET",
+      "parameters": ["item_id"]
+    },
+    {
+      "name": "place_order",
+      "type": "REST",
+      "endpoint": "https://api.supplier-portal.com/v1/orders",
+      "method": "POST",
+      "parameters": ["supplier_id", "item_id", "quantity"]
+    },
+    {
+      "name": "track_shipment",
+      "type": "REST",
+      "endpoint": "https://api.shipping-carrier.com/v1/track",
+      "method": "GET",
+      "parameters": ["po_number"]
+    }
+  ]
+}
